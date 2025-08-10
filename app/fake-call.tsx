@@ -35,14 +35,63 @@ export default function FakeCallScreen() {
     getContactInfo();
   }, [contactId]);
 
-  // Play ringtone
+  // Enhanced ringtone with system-like behavior for maximum authenticity
   useEffect(() => {
     (async () => {
-      const { sound } = await Audio.Sound.createAsync(require('../assets/ringtone.mp3'), { isLooping: true });
-      soundRef.current = sound;
-      await sound.playAsync();
+      try {
+        // Configure audio session to behave like real phone calls
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: false,
+          staysActiveInBackground: true,
+          playsInSilentModeIOS: true, // CRITICAL: Play even in silent mode (like real calls)
+          shouldDuckAndroid: true,
+          playThroughEarpieceAndroid: false,
+        });
+
+        // Load and configure ringtone with system-like properties
+        const { sound } = await Audio.Sound.createAsync(
+          require('../assets/ringtone.mp3'),
+          { 
+            isLooping: true,
+            volume: 1.0, // Full volume - respects system ringtone volume
+            progressUpdateIntervalMillis: 100,
+            positionMillis: 0,
+          }
+        );
+        
+        soundRef.current = sound;
+        
+        // Set additional properties for authenticity
+        await sound.setVolumeAsync(1.0); // Maximum authenticity
+        await sound.setIsLoopingAsync(true); // Continuous like real calls
+        await sound.playAsync();
+        
+        console.log('Enhanced fake call ringtone started with system-like behavior');
+        console.log('✅ Plays in silent mode: YES (like real calls)');
+        console.log('✅ Respects system volume: YES');
+        console.log('✅ Continuous looping: YES');
+        console.log('✅ Background playback: YES');
+        
+      } catch (error) {
+        console.error('Error setting up enhanced ringtone:', error);
+        // Simplified fallback that still maintains some system-like behavior
+        try {
+          const { sound } = await Audio.Sound.createAsync(
+            require('../assets/ringtone.mp3'),
+            { isLooping: true, volume: 0.9 }
+          );
+          soundRef.current = sound;
+          await sound.playAsync();
+          console.log('Using fallback ringtone configuration');
+        } catch (fallbackError) {
+          console.error('All ringtone options failed:', fallbackError);
+        }
+      }
     })();
-    return () => { soundRef.current?.unloadAsync(); };
+    
+    return () => { 
+      soundRef.current?.unloadAsync();
+    };
   }, []);
 
   const answer = async () => {

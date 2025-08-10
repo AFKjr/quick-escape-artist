@@ -1,50 +1,122 @@
-# Welcome to your Expo app 👋
+# Quick Escape Artist 📱
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A React Native/Expo app designed to help users gracefully exit uncomfortable social situations using fake calls and text messages.
 
-## Get started
+## Features
 
-1. Install dependencies
+- **Fake Calls**: Receive authentic-looking incoming calls with customizable contact information
+- **Fake Text Messages**: Get realistic text message notifications to excuse yourself
+- **Scheduled Escapes**: Set delays from 30 seconds to 30 minutes for perfectly timed interruptions
+- **Background Alarms**: Reliable notification system that works even when the app is closed
+- **Customizable Contacts**: Personalize caller names and details for maximum authenticity
+- **Silent Mode Support**: Audio plays even in silent mode for realistic call behavior
 
+## Getting Started
+
+### Prerequisites
+- Node.js (v18 or higher)
+- Expo CLI
+- iOS Simulator or Android Emulator (or physical device with Expo Go)
+
+### Installation
+
+1. Clone the repository
+   ```bash
+   git clone https://github.com/AFKjr/quick-escape-artist.git
+   cd quick-escape-artist
+   ```
+
+2. Install dependencies
    ```bash
    npm install
    ```
 
-2. Start the app
-
+3. Start the development server
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+4. Open the app in:
+   - [development build](https://docs.expo.dev/develop/development-builds/introduction/)
+   - [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
+   - [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
+   - [Expo Go](https://expo.dev/go) app on your device
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## How to Use
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+1. **First Time Setup**: Complete the onboarding process to understand the app's features
+2. **Quick Escape**: Tap "Trigger Now" for an immediate fake call or text
+3. **Scheduled Escape**: Set a delay timer and the app will notify you at the perfect moment
+4. **Customize**: Visit Settings to personalize contact names and preferences
+5. **Background Mode**: The app works reliably even when minimized or phone is locked
 
-## Get a fresh project
+## Technical Architecture
 
-When you're ready, run:
+- **Framework**: React Native with Expo SDK
+- **Language**: TypeScript
+- **Navigation**: Expo Router (file-based routing)
+- **Audio**: Expo AV with system-like ringtone behavior
+- **Notifications**: Expo Notifications for background alarms
+- **Storage**: AsyncStorage for user preferences
+- **State Management**: React hooks with persistent storage
 
-```bash
-npm run reset-project
+## Project Structure
+
+```
+app/                    # Main application screens
+├── (tabs)/            # Tab navigation screens
+├── onboarding.tsx     # First-time user setup
+├── fake-call.tsx      # Incoming call simulation
+├── call-in-progress.tsx # Active call interface
+└── settings.tsx       # User preferences
+
+components/            # Reusable UI components
+├── DelayPicker.tsx    # Time delay selector
+└── ui/               # Theme-aware components
+
+utils/                # Business logic utilities
+├── scheduler.ts      # Alarm scheduling system
+├── notifications.ts  # Background notification handling
+└── preferences.ts    # User settings management
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Development
 
-## Learn more
+### Available Scripts
 
-To learn more about developing your project with Expo, look at the following resources:
+- `npm start` - Start the Expo development server
+- `npm run android` - Open on Android emulator
+- `npm run ios` - Open on iOS simulator
+- `npm run web` - Open in web browser
+- `npm run reset-project` - Reset to starter template
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### Key Features Implementation
 
-## Join the community
+- **Background Alarms**: Hybrid system using JavaScript timers + native notifications
+- **Authentic Audio**: Configured to play even in silent mode like real phone calls
+- **Persistent State**: User preferences and alarm schedules survive app restarts
+- **Responsive Design**: Works across different screen sizes and orientations
 
-Join our community of developers creating universal apps.
+## Contributing
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## Privacy & Safety
+
+This app is designed for social comfort and should be used responsibly. It creates realistic fake communications to help users politely exit uncomfortable situations.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Support
+
+For support, questions, or feature requests, please open an issue on GitHub.
+
+---
+
+Built with ❤️ using React Native and Expo

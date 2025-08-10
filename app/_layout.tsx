@@ -56,8 +56,6 @@ function InitialLayout() {
       <Stack.Screen name="call-in-progress" options={{ headerShown: false, animation: 'fade' }} />
       <Stack.Screen name="messages-mock" options={{ headerShown: false, animation: 'fade' }} />
       <Stack.Screen name="settings" options={{ headerShown: false, animation: 'slide_from_bottom' }} />
-      <Stack.Screen name="resources" options={{ headerShown: false }} />
-      <Stack.Screen name="survival-guide" options={{ headerShown: false, animation: 'slide_from_bottom' }} />
       <Stack.Screen name="+not-found" />
     </Stack>
   );

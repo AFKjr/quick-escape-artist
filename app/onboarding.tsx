@@ -1,9 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Image, ImageSourcePropType, Pressable, StyleSheet, Text, View } from 'react-native';
 
-interface OnboardingStep {
+interface OnboardingStep 
+{
   title: string;
   description: string;
   tips?: string[];
@@ -15,7 +16,8 @@ interface OnboardingStep {
 const ONBOARDING_KEY = 'quick-escape-artist-onboarding-completed';
 
 // Steps for onboarding
-const ONBOARDING_STEPS: OnboardingStep[] = [
+const ONBOARDING_STEPS: OnboardingStep[] = 
+[
   {
     title: "Welcome to Quick Escape Artist",
     description: "Your social lifesaver for awkward situations! Escape boring conversations and dull gatherings with style.",
@@ -53,54 +55,104 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
   }
 ];
 
-export default function OnboardingScreen() {
-  const [currentStep, setCurrentStep] = useState(0);
+export default function OnboardingScreen() 
+{
+  // Progress-based state (0 to 1, where 1 = completed)
+  const [onboardingProgress, setOnboardingProgress] = useState(0);
   
-  const handleNext = () => {
-    if (currentStep < ONBOARDING_STEPS.length - 1) {
-      // Move to the next step
-      setCurrentStep(currentStep + 1);
-    } else {
-      // This is the last step, complete onboarding and go to main app
-      completeOnboarding();
-    }
-  };
+  // Constants for progress calculation
+  const totalOnboardingSteps = ONBOARDING_STEPS.length;
+  const progressIncrementPerStep = 1 / totalOnboardingSteps;
   
-  const handleSkip = () => {
-    completeOnboarding();
-  };
+  // Derived state based on progress
+  const currentStepIndex = Math.floor(onboardingProgress * totalOnboardingSteps);
+  const isOnboardingComplete = onboardingProgress >= 1;
+  const isFirstOnboardingStep = onboardingProgress === 0;
+  const isLastOnboardingStep = currentStepIndex === totalOnboardingSteps - 1;
+  const completionPercentage = Math.round(onboardingProgress * 100);
   
-  const completeOnboarding = async () => {
+  // Navigation to main application
+  const navigateToMainApplication = async () => {
     try {
       await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
-      // Force navigation to the main tab screen
+      console.log(`Onboarding completed at ${completionPercentage}%, navigating to main app...`);
       router.replace("/(tabs)");
-    } catch (error) {
-      console.error('Error storing onboarding status:', error);
+    } catch (storageError) {
+      console.error('Error storing onboarding completion status:', storageError);
+      // Still navigate even if storage fails
       router.replace("/(tabs)");
     }
   };
   
-  const currentStepData = ONBOARDING_STEPS[currentStep];
-  const isLastStep = currentStep === ONBOARDING_STEPS.length - 1;
+  // Handle progression to next step or completion
+  const handleOnboardingProgression = () => {
+    const newProgress = Math.min(1, onboardingProgress + progressIncrementPerStep);
+    const newStepIndex = Math.floor(newProgress * totalOnboardingSteps);
+    
+    console.log(`Progressing from step ${currentStepIndex} to ${newStepIndex}, progress: ${Math.round(newProgress * 100)}%`);
+    
+    setOnboardingProgress(newProgress);
+    
+    // Check if onboarding is now complete
+    if (newProgress >= 1) {
+      console.log('Onboarding progression completed, navigating to main app...');
+      setTimeout(() => navigateToMainApplication(), 100); // Small delay for state update
+    }
+  };
+  
+  // Handle skipping entire onboarding flow
+  const handleOnboardingSkip = () => {
+    console.log('User skipped onboarding, completing immediately...');
+    setOnboardingProgress(1);
+    setTimeout(() => navigateToMainApplication(), 100); // Small delay for state update
+  };
+  
+  // Handle going back to previous step
+  const handleOnboardingRegression = () => {
+    if (!isFirstOnboardingStep) {
+      const newProgress = Math.max(0, onboardingProgress - progressIncrementPerStep);
+      console.log(`Regressing to previous step, new progress: ${Math.round(newProgress * 100)}%`);
+      setOnboardingProgress(newProgress);
+    }
+  };
+  
+  // Handle direct navigation to specific step
+  const navigateToOnboardingStep = (targetStepIndex: number) => {
+    if (targetStepIndex >= 0 && targetStepIndex < totalOnboardingSteps) {
+      const targetProgress = targetStepIndex / totalOnboardingSteps;
+      console.log(`Navigating directly to step ${targetStepIndex}, progress: ${Math.round(targetProgress * 100)}%`);
+      setOnboardingProgress(targetProgress);
+    }
+  };
+  
+  // Effect to monitor progress changes and handle completion
+  useEffect(() => {
+    console.log(`Onboarding progress updated: ${completionPercentage}% (Step ${currentStepIndex + 1}/${totalOnboardingSteps})`);
+    
+    if (isOnboardingComplete && onboardingProgress === 1) {
+      console.log('Onboarding marked as complete via progress state');
+    }
+  }, [onboardingProgress, completionPercentage, currentStepIndex, totalOnboardingSteps, isOnboardingComplete]);
+  
+  const currentOnboardingStepData = ONBOARDING_STEPS[currentStepIndex];
   
   return (
     <View style={[
       styles.container, 
-      {backgroundColor: currentStepData.backgroundColor || '#F9FAFB'}
+      {backgroundColor: currentOnboardingStepData.backgroundColor || '#F9FAFB'}
     ]}>
-      <Pressable style={styles.skipButton} onPress={handleSkip}>
+      <Pressable style={styles.skipButton} onPress={handleOnboardingSkip}>
         <Text style={styles.skipText}>Skip</Text>
       </Pressable>
       
       <View style={styles.content}>
-        <Image source={currentStepData.image} style={styles.image} />
-        <Text style={styles.title}>{currentStepData.title}</Text>
-        <Text style={styles.description}>{currentStepData.description}</Text>
+        <Image source={currentOnboardingStepData.image} style={styles.image} />
+        <Text style={styles.title}>{currentOnboardingStepData.title}</Text>
+        <Text style={styles.description}>{currentOnboardingStepData.description}</Text>
         
-        {currentStepData.tips && (
+        {currentOnboardingStepData.tips && (
           <View style={styles.tipsContainer}>
-            {currentStepData.tips.map((tip, index) => (
+            {currentOnboardingStepData.tips.map((tip, index) => (
               <View key={index} style={styles.tipItem}>
                 <View style={styles.tipBullet}>
                   <Text style={styles.bulletText}>•</Text>
@@ -113,14 +165,29 @@ export default function OnboardingScreen() {
       </View>
       
       <View style={styles.footer}>
+        {/* Progress bar */}
+        <View style={styles.progressBarContainer}>
+          <View style={styles.progressBarBackground}>
+            <View 
+              style={[
+                styles.progressBarFill, 
+                { width: `${completionPercentage}%` }
+              ]} 
+            />
+          </View>
+          <Text style={styles.progressText}>
+            {completionPercentage}% Complete
+          </Text>
+        </View>
+        
         <View style={styles.pagination}>
-          {ONBOARDING_STEPS.map((_, index) => (
+          {ONBOARDING_STEPS.map((_, stepIndex) => (
             <Pressable 
-              key={index}
-              onPress={() => setCurrentStep(index)}
+              key={stepIndex}
+              onPress={() => navigateToOnboardingStep(stepIndex)}
               style={[
                 styles.paginationDot,
-                index === currentStep && styles.paginationDotActive
+                stepIndex === currentStepIndex && styles.paginationDotActive
               ]}
             />
           ))}
@@ -128,11 +195,11 @@ export default function OnboardingScreen() {
         
         <Pressable 
           style={styles.nextButton} 
-          onPress={handleNext}
+          onPress={handleOnboardingProgression}
           android_ripple={{color: 'rgba(255,255,255,0.2)'}}
         >
           <Text style={styles.nextButtonText}>
-            {isLastStep ? "Get Started" : "Next"}
+            {isLastOnboardingStep ? "Get Started" : "Next"}
           </Text>
         </Pressable>
       </View>
@@ -141,7 +208,8 @@ export default function OnboardingScreen() {
 }
 
 // Helper function to check if onboarding has been completed
-export async function hasCompletedOnboarding(): Promise<boolean> {
+export async function hasCompletedOnboarding(): Promise<boolean> 
+{
   try {
     const value = await AsyncStorage.getItem(ONBOARDING_KEY);
     return value === 'true';
@@ -219,6 +287,29 @@ const styles = StyleSheet.create({
   },
   footer: {
     marginBottom: 50,
+  },
+  progressBarContainer: {
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  progressBarBackground: {
+    width: '100%',
+    height: 6,
+    backgroundColor: '#E5E7EB',
+    borderRadius: 3,
+    overflow: 'hidden',
+    marginBottom: 8,
+  },
+  progressBarFill: {
+    height: '100%',
+    backgroundColor: '#111827',
+    borderRadius: 3,
+    minWidth: 2, // Ensure some visual feedback even at 0%
+  },
+  progressText: {
+    fontSize: 12,
+    color: '#6B7280',
+    fontWeight: '500',
   },
   pagination: {
     flexDirection: 'row',
