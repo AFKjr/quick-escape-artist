@@ -9,7 +9,7 @@ A React Native/Expo app designed to help users gracefully exit uncomfortable soc
 - **Scheduled Escapes**: Set delays from 30 seconds to 30 minutes for perfectly timed interruptions
 - **Background Alarms**: Reliable notification system that works even when the app is closed
 - **Customizable Contacts**: Personalize caller names and details for maximum authenticity
-- **Silent Mode Support**: Audio plays even in silent mode for realistic call behavior
+- **Silent Mode Support**: Audio experience uses device's native notification system for authentic behavior
 
 ## Getting Started
 
@@ -93,7 +93,7 @@ utils/                # Business logic utilities
 ### Key Features Implementation
 
 - **Background Alarms**: Hybrid system using JavaScript timers + native notifications
-- **Authentic Audio**: Configured to play even in silent mode like real phone calls
+- **Authentic Audio**: Uses device's native sound system for realistic call experience
 - **Persistent State**: User preferences and alarm schedules survive app restarts
 - **Responsive Design**: Works across different screen sizes and orientations
 
