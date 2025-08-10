@@ -1,42 +1,22 @@
 {
   "expo": {
-    "name": "quick-escape-artist",
+    "name": "Quick Escape Artist",
     "slug": "quick-escape-artist",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "quickescapeartist",
-    "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "scheme": "qea",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false,
+      "bundleIdentifier": "com.studioafk.quickescapeartist",
+      "infoPlist": {
+        "UIBackgroundModes": ["audio"],
+        "NSUserNotificationUsageDescription": "Allows urgent texts for graceful exits."
+      }
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "edgeToEdgeEnabled": true
+      "package": "com.studioafk.quickescapeartist",
+      "permissions": [],
+      "useNextNotificationsApi": true
     },
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
-    },
-    "plugins": [
-      "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
-        }
-      ]
-    ],
-    "experiments": {
-      "typedRoutes": true
-    }
+    "plugins": ["expo-notifications"],
+    "assetBundlePatterns": ["**/*"]
   }
 }

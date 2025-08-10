@@ -1,75 +1,266 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import DelayPicker from '@/components/DelayPicker';
+import { DEFAULT_MESSAGES } from '@/utils/customization';
+import { ensureNotificationPermissions, scheduleUrgentText } from '@/utils/notifications';
+import { loadPreferences } from '@/utils/preferences';
+import { parseDelay } from '@/utils/scheduler';
+import * as Haptics from 'expo-haptics';
+import { router } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 
 export default function HomeScreen() {
+  const [triggerNow, setTriggerNow] = useState(true);
+  const [delayMs, setDelayMs] = useState<number | null>(null);
+  const [defaultContactId, setDefaultContactId] = useState('mom');
+  const [defaultMessageId, setDefaultMessageId] = useState('urgent');
+  const [vibrationEnabled, setVibrationEnabled] = useState(true);
+  
+  // Load user preferences
+  useEffect(() => {
+    const loadUserPrefs = async () => {
+      try {
+        const prefs = await loadPreferences();
+        setDefaultContactId(prefs.defaultContactId);
+        setDefaultMessageId(prefs.defaultMessageId);
+        setVibrationEnabled(prefs.vibrationEnabled);
+      } catch (error) {
+        console.error('Error loading preferences:', error);
+      }
+    };
+    
+    loadUserPrefs();
+  }, []);
+
+  const goFakeCall = async () => {
+    const ms = parseDelay(triggerNow, delayMs);
+    if (vibrationEnabled) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+    
+    if (ms === 0) {
+      router.push({ pathname: '/fake-call', params: { contactId: defaultContactId } });
+    } else {
+      Alert.alert(
+        'Call Scheduled',
+        `Your fake call will arrive in ${ms/1000} seconds`,
+        [{ text: 'OK' }]
+      );
+      setTimeout(() => 
+        router.push({ pathname: '/fake-call', params: { contactId: defaultContactId } }), 
+        ms
+      );
+    }
+  };
+
+  const goFakeText = async () => {
+    try {
+      await ensureNotificationPermissions();
+      const ms = parseDelay(triggerNow, delayMs);
+      
+      // Find the message template
+      const messageTemplate = DEFAULT_MESSAGES.find(m => m.id === defaultMessageId) || DEFAULT_MESSAGES[0];
+      
+      await scheduleUrgentText({ 
+        delayMs: ms, 
+        message: messageTemplate, 
+        vibrate: vibrationEnabled 
+      });
+      
+      if (ms === 0) {
+        router.push({ pathname: '/messages-mock', params: { messageId: defaultMessageId } });
+      } else {
+        Alert.alert(
+          'Message Scheduled',
+          `Your fake message will arrive in ${ms/1000} seconds`,
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (e: any) {
+      Alert.alert('Notifications disabled', e?.message ?? 'Enable notifications in Settings.');
+    }
+  };
+
+  const goToSettings = () => {
+    router.push('/settings');
+  };
+  
+  const goToSurvivalGuide = () => {
+    router.push('/survival-guide');
+  };
+  
+  // Emergency fake call - skips delay and uses most urgent settings
+  const emergencyEscape = async () => {
+    if (vibrationEnabled) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+    
+    // Random funny quotes that appear when the emergency button is pressed
+    const emergencyQuotes = [
+      "Initiating escape sequence!",
+      "Awkwardness detected! Deploying countermeasures!",
+      "Social ejection seat activated!",
+      "Engaging conversation escape pod!",
+      "Executing Operation: Get Me Outta Here!"
+    ];
+    
+    // Show random quote
+    const randomQuote = emergencyQuotes[Math.floor(Math.random() * emergencyQuotes.length)];
+    Alert.alert("Emergency Escape!", randomQuote, [{ text: "Let's Go!" }], { cancelable: false });
+    
+    // Trigger immediate fake call
+    setTimeout(() => 
+      router.push({ pathname: '/fake-call', params: { contactId: defaultContactId } }), 
+      800
+    );
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <View style={styles.container}>
+      <Text style={styles.title}>Quick Escape Artist</Text>
+      <Text style={styles.subtitle}>Your ticket to social freedom</Text>
+      
+      <Pressable 
+        style={styles.emergencyButton} 
+        onPress={emergencyEscape}
+        android_ripple={{ color: 'rgba(255,255,255,0.3)' }}
+      >
+        <Text style={styles.emergencyButtonText}>🆘 EMERGENCY ESCAPE 🆘</Text>
+      </Pressable>
+
+      <View style={styles.actions}>
+        <Pressable 
+          style={[styles.btn, styles.primary]} 
+          onPress={goFakeCall}
+          android_ripple={{ color: 'rgba(255,255,255,0.2)' }}
+        >
+          <Text style={styles.btnTxt}>Fake Call</Text>
+        </Pressable>
+        <Pressable 
+          style={[styles.btn, styles.secondary]} 
+          onPress={goFakeText}
+          android_ripple={{ color: 'rgba(255,255,255,0.2)' }}
+        >
+          <Text style={styles.btnTxt}>Fake Text</Text>
+        </Pressable>
+      </View>
+
+      <DelayPicker
+        triggerNow={triggerNow}
+        selectedMs={delayMs}
+        onSelect={setDelayMs}
+        onToggleTriggerNow={setTriggerNow}
+      />
+      
+      <View style={styles.buttonRow}>
+        <Pressable 
+          style={styles.settingsButton} 
+          onPress={goToSettings}
+          android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
+        >
+          <Text style={styles.settingsText}>Settings</Text>
+        </Pressable>
+        
+        <Pressable 
+          style={styles.guideButton} 
+          onPress={goToSurvivalGuide}
+          android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
+        >
+          <Text style={styles.settingsText}>Survival Guide</Text>
+        </Pressable>
+      </View>
+
+      <Text style={styles.price}>One-time purchase • $4.99</Text>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
+  container: { 
+    flex: 1, 
+    backgroundColor: '#F9FAFB', 
+    paddingHorizontal: 20, 
+    paddingTop: 80 
+  },
+  title: { 
+    fontSize: 24, 
+    fontWeight: '800', 
+    textAlign: 'center', 
+    color: '#111827' 
+  },
+  subtitle: { 
+    textAlign: 'center', 
+    color: '#6B7280', 
+    marginTop: 6 
+  },
+  emergencyButton: {
+    backgroundColor: '#DC2626',
+    borderRadius: 12,
+    paddingVertical: 14,
+    marginTop: 16,
+    marginBottom: 16,
     alignItems: 'center',
-    gap: 8,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  emergencyButtonText: {
+    color: 'white',
+    fontWeight: '900',
+    fontSize: 16,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  actions: { 
+    marginTop: 16, 
+    gap: 12 
   },
+  btn: { 
+    paddingVertical: 18, 
+    borderRadius: 12, 
+    alignItems: 'center' 
+  },
+  primary: { 
+    backgroundColor: '#111827' 
+  },
+  secondary: { 
+    backgroundColor: '#374151' 
+  },
+  btnTxt: { 
+    color: 'white', 
+    fontWeight: '800', 
+    fontSize: 16 
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 12,
+    marginTop: 30
+  },
+  settingsButton: { 
+    paddingVertical: 12, 
+    paddingHorizontal: 24, 
+    borderRadius: 8, 
+    borderWidth: 1, 
+    borderColor: '#6B7280'
+  },
+  guideButton: { 
+    paddingVertical: 12, 
+    paddingHorizontal: 24, 
+    borderRadius: 8, 
+    backgroundColor: '#E0E7FF',
+    borderWidth: 1, 
+    borderColor: '#818CF8'
+  },
+  settingsText: { 
+    color: '#6B7280', 
+    fontWeight: '600',
+    fontSize: 14
+  },
+  price: { 
+    position: 'absolute', 
+    bottom: 24, 
+    width: '100%', 
+    textAlign: 'center', 
+    color: '#6B7280' 
+  }
 });
