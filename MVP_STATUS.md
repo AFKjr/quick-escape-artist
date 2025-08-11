@@ -62,7 +62,6 @@
 
 - Add user profile picture for fake caller
 - Add more message templates and customization options
-- Implement in-app purchases
 - Add voice recording playback during fake calls
 - Create custom ringtones
 - Improve background notification handling
@@ -73,6 +72,5 @@ The app is now feature complete for MVP status. All core functionality is implem
 
 For production, we would need to:
 1. Create custom icons and splash screens
-2. Set up the in-app purchase system
-3. Implement analytics
-4. Perform thorough testing across different devices
+2. Implement analytics
+3. Perform thorough testing across different devices

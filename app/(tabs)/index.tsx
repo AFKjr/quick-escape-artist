@@ -245,7 +245,7 @@ export default function HomeScreen() {
     if (scheduledAlarm.type === 'call') {
       router.push({ pathname: '/fake-call', params: { contactId: defaultContactId } });
     } else {
-      router.push({ pathname: '/messages-mock', params: { messageId: defaultMessageId } });
+      router.push({ pathname: '/messages-mock', params: { messageId: defaultMessageId, contactId: defaultContactId } });
     }
     
     setScheduledAlarm(null);
@@ -291,7 +291,7 @@ export default function HomeScreen() {
       
       if (ms === 0) {
         // Immediate fake text
-        router.push({ pathname: '/messages-mock', params: { messageId: defaultMessageId } });
+        router.push({ pathname: '/messages-mock', params: { messageId: defaultMessageId, contactId: defaultContactId } });
       } else {
         // Show confirmation dialog for scheduled text
         Alert.alert(
@@ -326,32 +326,6 @@ export default function HomeScreen() {
   const goToSettings = () => {
     router.push('/settings');
   };
-  
-  // Emergency fake call - skips delay and uses most urgent settings
-  const emergencyEscape = async () => {
-    if (vibrationEnabled) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    }
-    
-    // Random funny quotes that appear when the emergency button is pressed
-    const emergencyQuotes = [
-      "Initiating escape sequence!",
-      "Awkwardness detected! Deploying countermeasures!",
-      "Social ejection seat activated!",
-      "Engaging conversation escape pod!",
-      "Executing Operation: Get Me Outta Here!"
-    ];
-    
-    // Show random quote
-    const randomQuote = emergencyQuotes[Math.floor(Math.random() * emergencyQuotes.length)];
-    Alert.alert("Emergency Escape!", randomQuote, [{ text: "Let's Go!" }], { cancelable: false });
-    
-    // Trigger immediate fake call
-    setTimeout(() => 
-      router.push({ pathname: '/fake-call', params: { contactId: defaultContactId } }), 
-      800
-    );
-  };
 
   return (
     <View style={styles.container}>
@@ -365,7 +339,7 @@ export default function HomeScreen() {
         >
           <View style={styles.alarmHeader}>
             <Text style={styles.alarmTitle}>
-              🚨 {scheduledAlarm.type === 'call' ? 'FAKE CALL' : 'FAKE TEXT'} ALARM
+              🚨 {scheduledAlarm?.type === 'call' ? 'FAKE CALL' : 'FAKE TEXT'} ALARM
             </Text>
             <Pressable 
               style={styles.cancelAlarmButton}
@@ -379,14 +353,14 @@ export default function HomeScreen() {
             {formatTimeRemaining(timeRemaining)}
           </Text>
           <Text style={styles.alarmSubtitle}>
-            {scheduledAlarm.type === 'call' ? 'Incoming call from' : 'Text message from'} {defaultContactId}
+            {scheduledAlarm?.type === 'call' ? 'Incoming call from' : 'Text message from'} {defaultContactId}
           </Text>
           <View style={styles.alarmProgress}>
             <View 
               style={[
                 styles.alarmProgressFill,
                 { 
-                  width: `${Math.max(0, (1 - timeRemaining / scheduledAlarm.originalDelayMs) * 100)}%` 
+                  width: `${Math.max(0, (1 - timeRemaining / (scheduledAlarm?.originalDelayMs || 1)) * 100)}%` 
                 }
               ]}
             />
@@ -396,14 +370,6 @@ export default function HomeScreen() {
       
       <Text style={styles.title}>Quick Escape Artist</Text>
       <Text style={styles.subtitle}>Your ticket to social freedom</Text>
-      
-      <Pressable 
-        style={styles.emergencyButton} 
-        onPress={emergencyEscape}
-        android_ripple={{ color: 'rgba(255,255,255,0.3)' }}
-      >
-        <Text style={styles.emergencyButtonText}>🆘 EMERGENCY ESCAPE 🆘</Text>
-      </Pressable>
 
       <View style={styles.actions}>
         <Pressable 
@@ -433,7 +399,7 @@ export default function HomeScreen() {
       {!triggerNow && delayMs && !isAlarmActive && (
         <View style={styles.delayConfirmation}>
           <Text style={styles.delayConfirmationText}>
-            ⏰ {formatTimeRemaining(delayMs)} selected
+            ⏰ {formatTimeRemaining(delayMs || 0)} selected
           </Text>
           <Text style={styles.delayConfirmationSubtext}>
             Choose "Fake Call" or "Fake Text" to set your escape alarm
@@ -450,8 +416,6 @@ export default function HomeScreen() {
           <Text style={styles.settingsText}>Settings</Text>
         </Pressable>
       </View>
-
-      <Text style={styles.price}>One-time purchase • $4.99</Text>
     </View>
   );
 }
@@ -560,24 +524,6 @@ const styles = StyleSheet.create({
     color: '#6B7280', 
     marginTop: 6 
   },
-  emergencyButton: {
-    backgroundColor: '#DC2626',
-    borderRadius: 12,
-    paddingVertical: 14,
-    marginTop: 16,
-    marginBottom: 16,
-    alignItems: 'center',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  emergencyButtonText: {
-    color: 'white',
-    fontWeight: '900',
-    fontSize: 16,
-  },
   actions: { 
     marginTop: 16, 
     gap: 12 
@@ -615,12 +561,5 @@ const styles = StyleSheet.create({
     color: '#6B7280', 
     fontWeight: '600',
     fontSize: 14
-  },
-  price: { 
-    position: 'absolute', 
-    bottom: 24, 
-    width: '100%', 
-    textAlign: 'center', 
-    color: '#6B7280' 
   }
 });

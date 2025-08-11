@@ -29,10 +29,10 @@ Quick Escape Artist is a personal safety app that provides users with "escape ro
 - [ ] Add proper error handling and recovery
 - [ ] Implement analytics to track feature usage (optional)
 
-### 4. Monetization
-- [ ] Set up in-app purchase for one-time $4.99 fee
-- [ ] Create free tier with limited features
-- [ ] Add optional subscription model for premium features
+### 4. Future Enhancements
+- [ ] Additional customization options
+- [ ] More contact templates
+- [ ] Enhanced audio options
 
 ## Implementation Priority
 1. Core functionality improvements

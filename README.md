@@ -44,7 +44,7 @@ A React Native/Expo app designed to help users gracefully exit uncomfortable soc
 
 ## How to Use
 
-1. **First Time Setup**: Complete the onboarding process to understand the app's features
+1. **App Launch**: Quick splash screen loads you directly into the main app
 2. **Quick Escape**: Tap "Trigger Now" for an immediate fake call or text
 3. **Scheduled Escape**: Set a delay timer and the app will notify you at the perfect moment
 4. **Customize**: Visit Settings to personalize contact names and preferences
@@ -65,7 +65,6 @@ A React Native/Expo app designed to help users gracefully exit uncomfortable soc
 ```
 app/                    # Main application screens
 ├── (tabs)/            # Tab navigation screens
-├── onboarding.tsx     # First-time user setup
 ├── fake-call.tsx      # Incoming call simulation
 ├── call-in-progress.tsx # Active call interface
 └── settings.tsx       # User preferences

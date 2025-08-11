@@ -1,4 +1,4 @@
-import { DEFAULT_MESSAGES, MessageTemplate } from '@/utils/customization';
+import { DEFAULT_CONTACTS, DEFAULT_MESSAGES, MessageTemplate } from '@/utils/customization';
 import { loadPreferences } from '@/utils/preferences';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -6,18 +6,28 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 export default function MessagesMockScreen() {
   const [message, setMessage] = useState<MessageTemplate>(DEFAULT_MESSAGES[0]);
-  const { messageId } = useLocalSearchParams();
+  const [contactName, setContactName] = useState("Mom");
+  const { messageId, contactId } = useLocalSearchParams();
   
   useEffect(() => {
     const getMessageInfo = async () => {
       try {
         const prefs = await loadPreferences();
-        const id = messageId as string || prefs.defaultMessageId;
+        const msgId = messageId as string || prefs.defaultMessageId;
+        const ctId = contactId as string || prefs.defaultContactId;
         
         // Find the message template
-        const messageTemplate = DEFAULT_MESSAGES.find(m => m.id === id) || DEFAULT_MESSAGES[0];
+        const messageTemplate = DEFAULT_MESSAGES.find(m => m.id === msgId) || DEFAULT_MESSAGES[0];
         if (messageTemplate) {
           setMessage(messageTemplate);
+        }
+        
+        // Find the contact
+        const contact = DEFAULT_CONTACTS.find(c => c.id === ctId) || 
+                        prefs.customContacts?.find(c => c.id === ctId);
+                        
+        if (contact) {
+          setContactName(contact.name);
         }
       } catch (error) {
         console.error('Error loading message info:', error);
@@ -25,7 +35,7 @@ export default function MessagesMockScreen() {
     };
     
     getMessageInfo();
-  }, [messageId]);
+  }, [messageId, contactId]);
 
   return (
     <View style={styles.wrap}>
@@ -37,7 +47,7 @@ export default function MessagesMockScreen() {
       </View>
       
       <View style={styles.bubbleWrap}>
-        <Text style={styles.senderName}>Mom</Text>
+        <Text style={styles.senderName}>{contactName}</Text>
         <View style={styles.bubble}>
           <Text style={styles.msg}>{message.body}</Text>
         </View>

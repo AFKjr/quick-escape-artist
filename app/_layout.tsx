@@ -1,57 +1,41 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Stack, useRouter, useSegments } from 'expo-router';
+import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { hasCompletedOnboarding } from './onboarding';
+
+function SplashScreen() {
+  return (
+    <View style={styles.splashContainer}>
+      <Text style={styles.splashTitle}>Quick Escape Artist</Text>
+      <Text style={styles.splashSubtitle}>Your social lifesaver</Text>
+    </View>
+  );
+}
 
 function InitialLayout() {
-  const [isOnboardingComplete, setIsOnboardingComplete] = useState<boolean | null>(null);
-  const segments = useSegments();
-  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const checkOnboarding = async () => {
-      const completed = await hasCompletedOnboarding();
-      setIsOnboardingComplete(completed);
-    };
+    // Show splash for 2.5 seconds then navigate to main app
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2500);
 
-    checkOnboarding();
+    return () => clearTimeout(timer);
   }, []);
 
-  useEffect(() => {
-    if (isOnboardingComplete === null) {
-      // Still loading onboarding status
-      return;
-    }
-
-    const inAuthGroup = segments[0] === '(tabs)';
-    
-    if (!isOnboardingComplete && !segments.includes('onboarding')) {
-      // Redirect to onboarding
-      router.replace('/onboarding');
-    } else if (isOnboardingComplete && segments.includes('onboarding')) {
-      // Redirect to home if they've completed onboarding
-      router.replace('/(tabs)');
-    }
-  }, [isOnboardingComplete, segments]);
-
-  if (isOnboardingComplete === null) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>Loading...</Text>
-      </View>
-    );
+  if (isLoading) {
+    return <SplashScreen />;
   }
 
   return (
     <Stack>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="onboarding" options={{ headerShown: false, gestureEnabled: false }} />
       <Stack.Screen name="fake-call" options={{ headerShown: false, animation: 'fade' }} />
       <Stack.Screen name="call-in-progress" options={{ headerShown: false, animation: 'fade' }} />
       <Stack.Screen name="messages-mock" options={{ headerShown: false, animation: 'fade' }} />
@@ -79,3 +63,26 @@ export default function RootLayout() {
     </ThemeProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  splashContainer: {
+    flex: 1,
+    backgroundColor: '#111827',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  splashTitle: {
+    fontSize: 32,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  splashSubtitle: {
+    fontSize: 18,
+    color: '#9CA3AF',
+    textAlign: 'center',
+    fontWeight: '500',
+  },
+});
