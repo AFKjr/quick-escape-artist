@@ -11,7 +11,7 @@ export async function savePreferences(preferences: UserPreferences): Promise<voi
     const jsonValue = JSON.stringify(preferences);
     await AsyncStorage.setItem(PREFERENCES_KEY, jsonValue);
   } catch (e) {
-    console.error('Failed to save preferences', e);
+    // Handle error silently
   }
 }
 
@@ -25,7 +25,6 @@ export async function loadPreferences(): Promise<UserPreferences> {
       ? JSON.parse(jsonValue) 
       : DEFAULT_PREFERENCES;
   } catch (e) {
-    console.error('Failed to load preferences', e);
     return DEFAULT_PREFERENCES;
   }
 }

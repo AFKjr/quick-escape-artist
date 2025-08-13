@@ -3,6 +3,15 @@
     "name": "Quick Escape Artist",
     "slug": "quick-escape-artist",
     "scheme": "qea",
+    "icon": "./assets/images/splash-icon.png",
+    "splash": {
+      "image": "./assets/images/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F5E050"
+    },
+    "web": {
+      "favicon": "./assets/images/splash-icon.png"
+    },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.studioafk.quickescapeartist",
@@ -14,7 +23,11 @@
     "android": {
       "package": "com.studioafk.quickescapeartist",
       "permissions": [],
-      "useNextNotificationsApi": true
+      "useNextNotificationsApi": true,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/splash-icon.png",
+        "backgroundColor": "#F5E050"
+      }
     },
     "plugins": ["expo-notifications"],
     "assetBundlePatterns": ["**/*"]

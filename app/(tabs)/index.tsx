@@ -44,13 +44,6 @@ export default function HomeScreen() {
         setDefaultMessageId(prefs.defaultMessageId);
         setDefaultRingtoneId(prefs.defaultRingtoneId || 'quick-escape');
         setVibrationEnabled(prefs.vibrationEnabled);
-        console.log('User preferences loaded:', {
-          contactId: prefs.defaultContactId,
-          messageId: prefs.defaultMessageId,
-          ringtoneId: prefs.defaultRingtoneId,
-          customContacts: prefs.customContacts?.length || 0,
-          customMessages: prefs.customMessages?.length || 0
-        });
       } catch (error) {
         console.error('Error loading preferences:', error);
       }
@@ -85,7 +78,7 @@ export default function HomeScreen() {
             ringtoneId: prefs.defaultRingtoneId,
           });
         } catch (error) {
-          console.error('Error reloading preferences:', error);
+          // Handle error silently
         }
       };
       
@@ -459,7 +452,7 @@ export default function HomeScreen() {
       )}
       
       <Text style={styles.title}>Quick Escape Artist</Text>
-      <Text style={styles.subtitle}>Your ticket to social freedom</Text>
+      <Text style={styles.subtitle}>Your ticket to social freedom!</Text>
 
       <View style={styles.actions}>
         <Pressable 

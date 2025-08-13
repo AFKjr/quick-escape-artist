@@ -26,9 +26,6 @@ export default function FakeCallScreen() {
         const prefs = await loadPreferences();
         const id = contactId as string || prefs.defaultContactId;
         
-        console.log('Loading contact with ID:', id);
-        console.log('Available custom contacts:', prefs.customContacts?.length || 0);
-        
         // Find the contact (check custom contacts first, then defaults)
         let contact = prefs.customContacts?.find(c => c.id === id);
         
@@ -40,23 +37,18 @@ export default function FakeCallScreen() {
         if (!contact) {
           if (prefs.customContacts && prefs.customContacts.length > 0) {
             contact = prefs.customContacts[0];
-            console.log('Using first custom contact as fallback:', contact.name);
           } else {
             contact = DEFAULT_CONTACTS[0]; // Default to "Mom"
-            console.log('Using first default contact as fallback:', contact.name);
           }
         }
         
         if (contact) {
           setContactName(contact.name);
-          console.log('Contact loaded:', contact.name);
         } else {
           // Ultimate fallback
           setContactName("Unknown Contact");
-          console.log('No contacts available, using fallback name');
         }
       } catch (error) {
-        console.error('Error loading contact info:', error);
         setContactName("Emergency Contact"); // Error fallback
       }
     };
@@ -68,8 +60,6 @@ export default function FakeCallScreen() {
   useEffect(() => {
     const playFakeCallRingtone = async () => {
       try {
-        console.log('Starting fake call ringtone...', 'Ringtone ID:', ringtoneId);
-        
         await Audio.setAudioModeAsync({
           allowsRecordingIOS: false,
           playsInSilentModeIOS: true,
@@ -82,7 +72,6 @@ export default function FakeCallScreen() {
         const ringtoneKey = Array.isArray(ringtoneId) ? ringtoneId[0] : ringtoneId;
         const selectedRingtone = ringtoneKey && ringtoneKey in RINGTONE_FILES ? ringtoneKey as keyof typeof RINGTONE_FILES : 'quick-escape';
         const ringtoneFile = RINGTONE_FILES[selectedRingtone];
-        console.log('Loading ringtone file:', selectedRingtone);
 
         // Play the selected ringtone as the "incoming call" sound
         const { sound } = await Audio.Sound.createAsync(
@@ -95,14 +84,12 @@ export default function FakeCallScreen() {
         );
 
         soundRef.current = sound;
-        console.log('Ringtone sound loaded and playing');
 
         // Call-like vibration pattern
         const callVibration = [0, 1000, 500, 1000, 500, 1000];
         Vibration.vibrate(callVibration, true);
         
       } catch (error) {
-        console.log('Error playing fake call ringtone:', error);
         // Fallback vibration
         Vibration.vibrate([0, 1000, 500, 1000], true);
       }
@@ -112,7 +99,6 @@ export default function FakeCallScreen() {
     
     return () => {
       // Cleanup only if component unmounts, not on contactName changes
-      console.log('Component unmounting - cleaning up sound');
       if (soundRef.current) {
         soundRef.current.unloadAsync();
       }
@@ -121,9 +107,6 @@ export default function FakeCallScreen() {
   }, [ringtoneId]); // Include ringtoneId to reload when ringtone changes
 
   const answer = async () => {
-    console.log('Call answered - stopping ringtone immediately');
-    console.log('soundRef.current exists:', !!soundRef.current);
-    
     // Stop everything immediately for instant response
     setRinging(false);
     Vibration.cancel();
@@ -131,14 +114,10 @@ export default function FakeCallScreen() {
     // Try multiple immediate stop methods in parallel - don't wait for status checks
     if (soundRef.current) {
       // Fire all stop methods immediately without waiting
-      soundRef.current.setIsLoopingAsync(false).catch(e => console.log('Loop disable error:', e));
-      soundRef.current.stopAsync().catch(e => console.log('Stop error:', e));
-      soundRef.current.pauseAsync().catch(e => console.log('Pause error:', e));
-      soundRef.current.setVolumeAsync(0).catch(e => console.log('Volume error:', e));
-      
-      console.log('All stop methods fired immediately');
-    } else {
-      console.log('No soundRef to stop');
+      soundRef.current.setIsLoopingAsync(false).catch(() => {});
+      soundRef.current.stopAsync().catch(() => {});
+      soundRef.current.pauseAsync().catch(() => {});
+      soundRef.current.setVolumeAsync(0).catch(() => {});
     }
     
     // Navigate immediately - don't wait for sound operations
@@ -153,9 +132,7 @@ export default function FakeCallScreen() {
         try {
           await soundRef.current.unloadAsync();
           soundRef.current = null;
-          console.log('Background cleanup completed');
         } catch (error) {
-          console.log('Background cleanup error:', error);
           soundRef.current = null;
         }
       }
@@ -163,9 +140,6 @@ export default function FakeCallScreen() {
   };
 
   const decline = async () => {
-    console.log('Call declined - stopping ringtone immediately');
-    console.log('soundRef.current exists:', !!soundRef.current);
-    
     // Stop everything immediately for instant response
     setRinging(false);
     Vibration.cancel();
@@ -173,14 +147,10 @@ export default function FakeCallScreen() {
     // Try multiple immediate stop methods in parallel - don't wait for status checks
     if (soundRef.current) {
       // Fire all stop methods immediately without waiting
-      soundRef.current.setIsLoopingAsync(false).catch(e => console.log('Loop disable error:', e));
-      soundRef.current.stopAsync().catch(e => console.log('Stop error:', e));
-      soundRef.current.pauseAsync().catch(e => console.log('Pause error:', e));
-      soundRef.current.setVolumeAsync(0).catch(e => console.log('Volume error:', e));
-      
-      console.log('All stop methods fired immediately');
-    } else {
-      console.log('No soundRef to stop');
+      soundRef.current.setIsLoopingAsync(false).catch(() => {});
+      soundRef.current.stopAsync().catch(() => {});
+      soundRef.current.pauseAsync().catch(() => {});
+      soundRef.current.setVolumeAsync(0).catch(() => {});
     }
     
     // Navigate immediately - don't wait for sound operations
@@ -192,9 +162,7 @@ export default function FakeCallScreen() {
         try {
           await soundRef.current.unloadAsync();
           soundRef.current = null;
-          console.log('Background cleanup completed');
         } catch (error) {
-          console.log('Background cleanup error:', error);
           soundRef.current = null;
         }
       }

@@ -1,9 +1,8 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform } from 'react-native';
+import { Platform, Text, View } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -30,7 +29,18 @@ export default function TabLayout() {
         name="index"
         options={{
           title: '',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          tabBarButton: () => (
+            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+              <View style={{ alignItems: 'center' }}>
+                <Text style={{ color: Colors[colorScheme ?? 'light'].tint, fontSize: 10, fontWeight: '600', lineHeight: 14 }}>
+                  Studio
+                </Text>
+                <Text style={{ color: Colors[colorScheme ?? 'light'].tint, fontSize: 12, fontWeight: '600', lineHeight: 14 }}>
+                  AFK
+                </Text>
+              </View>
+            </View>
+          ),
         }}
       />
     </Tabs>

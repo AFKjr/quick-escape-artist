@@ -2,7 +2,7 @@ import { ContactOption, DEFAULT_CONTACTS, DEFAULT_MESSAGES, MessageTemplate } fr
 import { loadPreferences, savePreferences } from '@/utils/preferences';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Alert, FlatList, Modal, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { Alert, FlatList, Modal, Pressable, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 
 // Available ringtone options
 const RINGTONE_OPTIONS = [
@@ -249,12 +249,8 @@ export default function SettingsScreen() {
         </Pressable>
       </View>
       
-      <ScrollView 
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={true}
-      >
-        <View style={styles.sectionHeader}>
+      <View style={styles.contentContainer}>
+        <View style={styles.messageSection}>
           <Text style={styles.sectionTitle}>Choose Default Contact</Text>
           <Pressable style={styles.addButton} onPress={() => setShowContactModal(true)}>
             <Text style={styles.addButtonText}>+ Add Custom</Text>
@@ -264,11 +260,9 @@ export default function SettingsScreen() {
         data={allContacts}
         renderItem={renderContactItem}
         keyExtractor={(item) => item.id}
-        horizontal
-        showsHorizontalScrollIndicator={false}
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContainer}
-        ItemSeparatorComponent={() => <View style={{ width: 12 }} />}
-        style={{ height: 150 }}
+        ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
       />
 
       <View style={styles.messageSection}>
@@ -286,18 +280,16 @@ export default function SettingsScreen() {
         ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
       />
 
-      <View style={styles.ringtoneSection}>
+      <View style={styles.messageSection}>
         <Text style={styles.sectionTitle}>Choose Ringtone</Text>
       </View>
       <FlatList
         data={RINGTONE_OPTIONS}
         renderItem={renderRingtoneItem}
         keyExtractor={(item) => item.id}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.ringtoneListContainer}
-        ItemSeparatorComponent={() => <View style={{ width: 12 }} />}
-        style={{ height: 100 }}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.listContainer}
+        ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
       />
 
       <View style={styles.settingRow}>
@@ -313,7 +305,7 @@ export default function SettingsScreen() {
       <Pressable style={styles.saveButton} onPress={handleSave}>
         <Text style={styles.saveButtonText}>Save Settings</Text>
       </Pressable>
-      </ScrollView>
+      </View>
 
       {/* Custom Contact Modal */}
       <Modal
@@ -439,6 +431,9 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 20,
   },
+  contentContainer: {
+    flex: 1,
+  },
   title: {
     fontSize: 24,
     fontWeight: '800',
@@ -448,25 +443,11 @@ const styles = StyleSheet.create({
     color: '#3B82F6',
     fontSize: 20,
   },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 20,
-    marginBottom: 10,
-  },
   messageSection: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: 40, 
-    marginBottom: 10,
-  },
-  ringtoneSection: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 40,
     marginBottom: 10,
   },
   sectionTitle: {
@@ -487,9 +468,6 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     paddingVertical: 40,
-  },
-  ringtoneListContainer: {
-    paddingVertical: 15,
   },
   itemWrapper: {
     position: 'relative',
@@ -553,11 +531,12 @@ const styles = StyleSheet.create({
     color: '#111827',
   },
   saveButton: {
-    backgroundColor: '#111827',
-    padding: 15,
+    backgroundColor: '#3B82F6',
+    padding: 10,
     borderRadius: 8,
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 30,
+    marginBottom: 30,
   },
   saveButtonText: {
     color: 'white',

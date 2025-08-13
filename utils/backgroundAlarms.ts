@@ -97,11 +97,9 @@ export async function scheduleBackgroundAlarm(alarm: Omit<BackgroundAlarm, 'id' 
     // 3. Set up background capabilities
     await setupBackgroundCapabilities();
 
-    console.log(`Background alarm scheduled: ${alarmId} in ${Math.ceil(delayMs / 1000)}s`);
     return alarmId;
 
   } catch (error) {
-    console.error('Failed to schedule background alarm:', error);
     throw new Error('Failed to schedule escape alarm');
   }
 }
@@ -117,9 +115,8 @@ export async function cancelBackgroundAlarm(alarmId: string): Promise<void> {
     // Remove from storage
     await removeActiveAlarm(alarmId);
     
-    console.log(`Background alarm cancelled: ${alarmId}`);
   } catch (error) {
-    console.error('Failed to cancel background alarm:', error);
+    // Handle error silently
   }
 }
 
@@ -131,7 +128,6 @@ export async function getActiveAlarms(): Promise<BackgroundAlarm[]> {
     const stored = await AsyncStorage.getItem(ACTIVE_ALARMS_KEY);
     return stored ? JSON.parse(stored) : [];
   } catch (error) {
-    console.error('Failed to get active alarms:', error);
     return [];
   }
 }
@@ -152,9 +148,8 @@ export async function clearAllAlarms(): Promise<void> {
     await AsyncStorage.removeItem(ACTIVE_ALARMS_KEY);
     await AsyncStorage.removeItem(ALARM_NOTIFICATIONS_KEY);
     
-    console.log('All alarms cleared');
   } catch (error) {
-    console.error('Failed to clear all alarms:', error);
+    // Handle error silently
   }
 }
 
@@ -179,12 +174,10 @@ export async function checkExpiredAlarms(): Promise<BackgroundAlarm[]> {
     // Update storage with only valid alarms
     if (expiredAlarms.length > 0) {
       await AsyncStorage.setItem(ACTIVE_ALARMS_KEY, JSON.stringify(validAlarms));
-      console.log(`Found ${expiredAlarms.length} expired alarms`);
     }
     
     return expiredAlarms;
   } catch (error) {
-    console.error('Failed to check expired alarms:', error);
     return [];
   }
 }
@@ -205,7 +198,7 @@ async function storeActiveAlarm(alarm: BackgroundAlarm, notificationId: string):
     await AsyncStorage.setItem(ALARM_NOTIFICATIONS_KEY, JSON.stringify(notificationMap));
     
   } catch (error) {
-    console.error('Failed to store active alarm:', error);
+    // Handle error silently
   }
 }
 
@@ -225,7 +218,7 @@ async function removeActiveAlarm(alarmId: string): Promise<void> {
     await AsyncStorage.setItem(ALARM_NOTIFICATIONS_KEY, JSON.stringify(notificationMap));
     
   } catch (error) {
-    console.error('Failed to remove active alarm:', error);
+    // Handle error silently
   }
 }
 
@@ -281,10 +274,8 @@ export async function initializeBackgroundAlarms(): Promise<void> {
     // Check for any expired alarms on app start
     await checkExpiredAlarms();
     
-    console.log('Background alarm system initialized');
-    
   } catch (error) {
-    console.error('Failed to initialize background alarms:', error);
+    // Handle error silently
   }
 }
 
@@ -295,8 +286,6 @@ export function handleAlarmNotificationResponse(response: Notifications.Notifica
   const data = response.notification.request.content.data as any;
   
   if (data?.action && typeof data.action === 'string' && data.action.startsWith('trigger-fake-')) {
-    console.log('Alarm notification tapped:', data);
-    
     // Remove the alarm from active list
     if (data.alarmId && typeof data.alarmId === 'string') {
       removeActiveAlarm(data.alarmId);

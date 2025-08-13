@@ -30,7 +30,6 @@ export default function MessagesMockScreen() {
                                 DEFAULT_MESSAGES[0];
         if (messageTemplate) {
           setMessage(messageTemplate);
-          console.log('Message loaded:', messageTemplate.title, ':', messageTemplate.body);
         }
         
         // Find the contact
@@ -39,10 +38,9 @@ export default function MessagesMockScreen() {
                         
         if (contact) {
           setContactName(contact.name);
-          console.log('Contact loaded:', contact.name);
         }
       } catch (error) {
-        console.error('Error loading message info:', error);
+        // Handle error silently
       }
     };
     
@@ -53,8 +51,6 @@ export default function MessagesMockScreen() {
   useEffect(() => {
     const playMessageRingtone = async () => {
       try {
-        console.log('Starting fake message ringtone...', 'Ringtone ID:', ringtoneId);
-        
         await Audio.setAudioModeAsync({
           allowsRecordingIOS: false,
           playsInSilentModeIOS: true,
@@ -67,7 +63,6 @@ export default function MessagesMockScreen() {
         const ringtoneKey = Array.isArray(ringtoneId) ? ringtoneId[0] : ringtoneId;
         const selectedRingtone = ringtoneKey && ringtoneKey in RINGTONE_FILES ? ringtoneKey as keyof typeof RINGTONE_FILES : 'quick-escape';
         const ringtoneFile = RINGTONE_FILES[selectedRingtone];
-        console.log('Loading ringtone file:', selectedRingtone);
 
         // Play the selected ringtone as the "incoming message" sound
         const { sound } = await Audio.Sound.createAsync(
@@ -80,14 +75,12 @@ export default function MessagesMockScreen() {
         );
 
         soundRef.current = sound;
-        console.log('Message ringtone sound loaded and playing');
 
         // Message-like vibration pattern (shorter than calls)
         const messageVibration = [0, 300, 200, 300];
         Vibration.vibrate(messageVibration, true);
         
       } catch (error) {
-        console.log('Error playing fake message ringtone:', error);
         // Fallback vibration
         Vibration.vibrate([0, 300, 200, 300], true);
       }
@@ -97,7 +90,6 @@ export default function MessagesMockScreen() {
     
     return () => {
       // Cleanup when component unmounts
-      console.log('Component unmounting - cleaning up message sound');
       if (soundRef.current) {
         soundRef.current.unloadAsync();
         soundRef.current = null;
@@ -107,8 +99,6 @@ export default function MessagesMockScreen() {
   }, [ringtoneId]); // Include ringtoneId to reload when ringtone changes
 
   const handleBack = async () => {
-    console.log('Back button pressed - stopping message ringtone immediately');
-    
     // Stop vibration immediately
     Vibration.cancel();
     
@@ -116,14 +106,12 @@ export default function MessagesMockScreen() {
     if (soundRef.current) {
       try {
         // Fire all stop methods immediately without waiting
-        soundRef.current.setIsLoopingAsync(false).catch(err => console.log('Loop disable error:', err));
-        soundRef.current.stopAsync().catch(err => console.log('Stop error:', err));
-        soundRef.current.pauseAsync().catch(err => console.log('Pause error:', err));
-        soundRef.current.setVolumeAsync(0).catch(err => console.log('Volume error:', err));
-        
-        console.log('All stop methods fired immediately');
+        soundRef.current.setIsLoopingAsync(false).catch(() => {});
+        soundRef.current.stopAsync().catch(() => {});
+        soundRef.current.pauseAsync().catch(() => {});
+        soundRef.current.setVolumeAsync(0).catch(() => {});
       } catch (error) {
-        console.log('Error in immediate stop:', error);
+        // Handle error silently
       }
     }
     
@@ -136,9 +124,7 @@ export default function MessagesMockScreen() {
         try {
           await soundRef.current.unloadAsync();
           soundRef.current = null;
-          console.log('Background cleanup completed');
         } catch (error) {
-          console.log('Background cleanup error:', error);
           soundRef.current = null;
         }
       }
