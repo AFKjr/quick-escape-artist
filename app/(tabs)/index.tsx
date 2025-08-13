@@ -1,24 +1,26 @@
 import DelayPicker from '@/components/DelayPicker';
 import {
-    cancelBackgroundAlarm,
-    getActiveAlarms,
-    initializeBackgroundAlarms,
-    scheduleBackgroundAlarm
+  cancelBackgroundAlarm,
+  getActiveAlarms,
+  initializeBackgroundAlarms,
+  scheduleBackgroundAlarm
 } from '@/utils/backgroundAlarms';
 import { DEFAULT_MESSAGES } from '@/utils/customization';
 import { ensureNotificationPermissions, scheduleUrgentText } from '@/utils/notifications';
 import { loadPreferences } from '@/utils/preferences';
 import { parseDelay } from '@/utils/scheduler';
+import { Audio } from 'expo-av';
 import * as Haptics from 'expo-haptics';
-import { router } from 'expo-router';
-import React, { useEffect, useRef, useState } from 'react';
-import { Alert, Animated, AppState, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { router, useFocusEffect } from 'expo-router';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Alert, Animated, AppState, Platform, Pressable, StyleSheet, Text, Vibration, View } from 'react-native';
 
 export default function HomeScreen() {
   const [triggerNow, setTriggerNow] = useState(true);
   const [delayMs, setDelayMs] = useState<number | null>(null);
   const [defaultContactId, setDefaultContactId] = useState('mom');
   const [defaultMessageId, setDefaultMessageId] = useState('urgent');
+  const [defaultRingtoneId, setDefaultRingtoneId] = useState('quick-escape');
   const [vibrationEnabled, setVibrationEnabled] = useState(true);
   
   // Timer state management (hybrid: visual + background-safe)
@@ -40,7 +42,15 @@ export default function HomeScreen() {
         const prefs = await loadPreferences();
         setDefaultContactId(prefs.defaultContactId);
         setDefaultMessageId(prefs.defaultMessageId);
+        setDefaultRingtoneId(prefs.defaultRingtoneId || 'quick-escape');
         setVibrationEnabled(prefs.vibrationEnabled);
+        console.log('User preferences loaded:', {
+          contactId: prefs.defaultContactId,
+          messageId: prefs.defaultMessageId,
+          ringtoneId: prefs.defaultRingtoneId,
+          customContacts: prefs.customContacts?.length || 0,
+          customMessages: prefs.customMessages?.length || 0
+        });
       } catch (error) {
         console.error('Error loading preferences:', error);
       }
@@ -58,6 +68,73 @@ export default function HomeScreen() {
     
     initializeApp();
   }, []);
+
+  // Reload preferences when screen comes back into focus (e.g., from settings)
+  useFocusEffect(
+    useCallback(() => {
+      const reloadPreferences = async () => {
+        try {
+          const prefs = await loadPreferences();
+          setDefaultContactId(prefs.defaultContactId);
+          setDefaultMessageId(prefs.defaultMessageId);
+          setDefaultRingtoneId(prefs.defaultRingtoneId || 'quick-escape');
+          setVibrationEnabled(prefs.vibrationEnabled);
+          console.log('Preferences reloaded on focus:', {
+            contactId: prefs.defaultContactId,
+            messageId: prefs.defaultMessageId,
+            ringtoneId: prefs.defaultRingtoneId,
+          });
+        } catch (error) {
+          console.error('Error reloading preferences:', error);
+        }
+      };
+      
+      reloadPreferences();
+    }, [])
+  );
+
+  // Add sound playing function
+  const playNotificationSound = async () => {
+    try {
+      console.log('Playing notification sound...');
+      
+      // Configure audio session
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: false,
+        playsInSilentModeIOS: true, // Play even in silent mode
+        staysActiveInBackground: false,
+        shouldDuckAndroid: false,
+        playThroughEarpieceAndroid: false,
+      });
+
+      // Load and play your custom MP3
+      const { sound } = await Audio.Sound.createAsync(
+        require('../../assets/audio/Quick Escape Ringtone.mp3'), // Your fun MP3!
+        {
+          shouldPlay: true, // Start playing immediately
+          isLooping: false, // Play once
+          volume: 1.0,
+        }
+      );
+
+      // Add vibration for extra effect
+      Vibration.vibrate([0, 200, 100, 200]);
+
+      // Clean up sound after it finishes
+      sound.setOnPlaybackStatusUpdate((status) => {
+        if (status.isLoaded && status.didJustFinish) {
+          sound.unloadAsync();
+        }
+      });
+
+      console.log('Sound playing!');
+      
+    } catch (error) {
+      console.log('Error playing sound:', error);
+      // Fallback to vibration only
+      Vibration.vibrate([0, 200, 100, 200]);
+    }
+  };
 
   // Monitor app state changes to handle background/foreground transitions
   useEffect(() => {
@@ -231,10 +308,13 @@ export default function HomeScreen() {
   };
 
   // Trigger the scheduled alarm when time is up
-  const triggerScheduledAlarm = () => {
+  const triggerScheduledAlarm = async () => {
     if (!scheduledAlarm) return;
     
     setIsAlarmActive(false);
+    
+    // Don't play sound here - let the destination screen handle audio
+    // await playNotificationSound(); // Removed to prevent double sound
     
     if (vibrationEnabled) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
@@ -243,15 +323,20 @@ export default function HomeScreen() {
     console.log(`Escape alarm triggered: ${scheduledAlarm.type}`);
     
     if (scheduledAlarm.type === 'call') {
-      router.push({ pathname: '/fake-call', params: { contactId: defaultContactId } });
+      router.push({ pathname: '/fake-call', params: { contactId: defaultContactId, ringtoneId: defaultRingtoneId } });
     } else {
-      router.push({ pathname: '/messages-mock', params: { messageId: defaultMessageId, contactId: defaultContactId } });
+      router.push({ pathname: '/messages-mock', params: { messageId: defaultMessageId, contactId: defaultContactId, ringtoneId: defaultRingtoneId } });
     }
     
     setScheduledAlarm(null);
   };
 
   const goFakeCall = async () => {
+    console.log('Fake call button pressed');
+    
+    // Don't play sound here - let the fake call screen handle the ringtone
+    // await playNotificationSound(); // Removed to prevent double sound
+    
     const ms = parseDelay(triggerNow, delayMs);
     
     if (vibrationEnabled) {
@@ -260,7 +345,7 @@ export default function HomeScreen() {
     
     if (ms === 0) {
       // Immediate fake call
-      router.push({ pathname: '/fake-call', params: { contactId: defaultContactId } });
+      router.push({ pathname: '/fake-call', params: { contactId: defaultContactId, ringtoneId: defaultRingtoneId } });
     } else {
       // Show confirmation dialog for scheduled call
       Alert.alert(
@@ -283,6 +368,11 @@ export default function HomeScreen() {
 
   const goFakeText = async () => {
     try {
+      console.log('Fake text button pressed');
+      
+      // Don't play sound here - let the fake message screen handle the ringtone
+      // await playNotificationSound(); // Removed to prevent double sound
+      
       await ensureNotificationPermissions();
       const ms = parseDelay(triggerNow, delayMs);
       
@@ -291,7 +381,7 @@ export default function HomeScreen() {
       
       if (ms === 0) {
         // Immediate fake text
-        router.push({ pathname: '/messages-mock', params: { messageId: defaultMessageId, contactId: defaultContactId } });
+        router.push({ pathname: '/messages-mock', params: { messageId: defaultMessageId, contactId: defaultContactId, ringtoneId: defaultRingtoneId } });
       } else {
         // Show confirmation dialog for scheduled text
         Alert.alert(

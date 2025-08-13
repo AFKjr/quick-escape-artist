@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { DEFAULT_PREFERENCES, UserPreferences } from './customization';
+import { DEFAULT_CONTACTS, DEFAULT_MESSAGES, DEFAULT_PREFERENCES, UserPreferences } from './customization';
 
 const PREFERENCES_KEY = 'quick-escape-artist-preferences';
 
@@ -35,11 +35,17 @@ export async function loadPreferences(): Promise<UserPreferences> {
  */
 export async function getContactById(id: string) {
   const prefs = await loadPreferences();
+  
+  // Check custom contacts first
   const customContact = prefs.customContacts?.find(c => c.id === id);
   if (customContact) return customContact;
   
-  const defaultContact = DEFAULT_PREFERENCES.defaultContactId;
-  return defaultContact;
+  // Then check default contacts
+  const defaultContact = DEFAULT_CONTACTS.find(c => c.id === id);
+  if (defaultContact) return defaultContact;
+  
+  // Return default fallback
+  return DEFAULT_CONTACTS.find(c => c.id === prefs.defaultContactId) || DEFAULT_CONTACTS[0];
 }
 
 /**
@@ -47,9 +53,15 @@ export async function getContactById(id: string) {
  */
 export async function getMessageById(id: string) {
   const prefs = await loadPreferences();
+  
+  // Check custom messages first
   const customMessage = prefs.customMessages?.find(m => m.id === id);
   if (customMessage) return customMessage;
   
-  const defaultMessage = DEFAULT_PREFERENCES.defaultMessageId;
-  return defaultMessage;
+  // Then check default messages
+  const defaultMessage = DEFAULT_MESSAGES.find(m => m.id === id);
+  if (defaultMessage) return defaultMessage;
+  
+  // Return default fallback
+  return DEFAULT_MESSAGES.find(m => m.id === prefs.defaultMessageId) || DEFAULT_MESSAGES[0];
 }

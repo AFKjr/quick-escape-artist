@@ -51,6 +51,7 @@ export const DEFAULT_MESSAGES: MessageTemplate[] = [
 export interface UserPreferences {
   defaultContactId: string;
   defaultMessageId: string;
+  defaultRingtoneId: string;
   vibrationEnabled: boolean;
   customContacts?: ContactOption[];
   customMessages?: MessageTemplate[];
@@ -60,5 +61,6 @@ export interface UserPreferences {
 export const DEFAULT_PREFERENCES: UserPreferences = {
   defaultContactId: 'mom',
   defaultMessageId: 'urgent',
+  defaultRingtoneId: 'quick-escape',
   vibrationEnabled: true,
 };
