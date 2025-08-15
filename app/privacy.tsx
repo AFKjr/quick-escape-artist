@@ -1,4 +1,8 @@
-Quick Escape Artist — Privacy Policy
+import { Stack, router } from 'expo-router';
+import React from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+
+const PRIVACY_TEXT = `Quick Escape Artist — Privacy Policy
 
 Last updated: August 14, 2025
 
@@ -34,7 +38,30 @@ Changes
 - If the app behavior changes (e.g., introducing backups, analytics, or server sync), this policy will be updated and users will be informed.
 
 Contact
-- For privacy questions, open an issue in the project repository or contact the developer via the repository contact information.
+- For privacy questions, contact afk.appsllc@gmail.com
+`;
 
+export default function PrivacyScreen() {
+  return (
+    <View style={styles.container}>
+      <Stack.Screen options={{ title: 'Privacy Policy' }} />
+      <ScrollView contentContainerStyle={styles.content}>
+        <Text style={styles.text}>{PRIVACY_TEXT}</Text>
+      </ScrollView>
+      <View style={styles.footer}>
+        <Pressable onPress={() => router.back()} style={styles.backBtn}>
+          <Text style={styles.backTxt}>Back</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
 
-
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#fff' },
+  content: { padding: 20 },
+  text: { fontSize: 16, lineHeight: 24, color: '#111' },
+  footer: { padding: 12, borderTopWidth: 1, borderColor: '#eee' },
+  backBtn: { alignSelf: 'center', padding: 10 },
+  backTxt: { color: '#0b6efd', fontWeight: '600' }
+});

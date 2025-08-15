@@ -1,6 +1,6 @@
-import { Tabs } from 'expo-router';
+import { router, Tabs } from 'expo-router';
 import React from 'react';
-import { Platform, Text, View } from 'react-native';
+import { Platform, Pressable, Text } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
 import TabBarBackground from '@/components/ui/TabBarBackground';
@@ -30,16 +30,14 @@ export default function TabLayout() {
         options={{
           title: '',
           tabBarButton: () => (
-            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-              <View style={{ alignItems: 'center' }}>
-                <Text style={{ color: Colors[colorScheme ?? 'light'].tint, fontSize: 10, fontWeight: '600', lineHeight: 14 }}>
-                  Studio
-                </Text>
-                <Text style={{ color: Colors[colorScheme ?? 'light'].tint, fontSize: 12, fontWeight: '600', lineHeight: 14 }}>
-                  AFK
-                </Text>
-              </View>
-            </View>
+            <Pressable
+              onPress={() => router.push('/privacy')}
+              style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+            >
+              <Text style={{ color: Colors[colorScheme ?? 'light'].tint, fontSize: 12, fontWeight: '600', lineHeight: 16, textAlign: 'center' }}>
+                Privacy Policy
+              </Text>
+            </Pressable>
           ),
         }}
       />
